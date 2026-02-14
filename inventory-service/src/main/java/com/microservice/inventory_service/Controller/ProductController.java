@@ -1,6 +1,7 @@
 package com.microservice.inventory_service.controller;
 
 
+import com.microservice.inventory_service.clients.OrdersFeignClient;
 import com.microservice.inventory_service.dto.ProductDto;
 import com.microservice.inventory_service.repository.ProductRepository;
 import com.microservice.inventory_service.service.ProductService;
@@ -19,22 +20,24 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/products")
+@RequestMapping("/core")
 public class ProductController {
 
     private final ProductService productService;
     private final DiscoveryClient discoveryClient;
     private final RestClient restClient;
+    private final OrdersFeignClient ordersFeignClient;
 
     @GetMapping("/fetchProducts")
     public ResponseEntity<String> fetchProducts() {
         // Returns 200 OK with a simple message
-        ServiceInstance serviceInstance = discoveryClient.getInstances("order-service")
-                .getFirst();
-
-        String response = restClient.get().uri(serviceInstance.getUri() + "/api/v1/orders/helloOrders")
-                .retrieve()
-                .body(String.class);
+//        ServiceInstance serviceInstance = discoveryClient.getInstances("order-service")
+//                .getFirst();
+//
+//        String response = restClient.get().uri(serviceInstance.getUri() + "/orders/core/helloOrders")
+//                .retrieve()
+//                .body(String.class);
+        String response = ordersFeignClient.helloOrders();
 
         return ResponseEntity.ok(response);
     }
