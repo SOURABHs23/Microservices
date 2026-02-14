@@ -22,6 +22,13 @@ public class OrdersController {
 
     private final OrdersService orderService;
 
+
+    @GetMapping("/helloOrders")
+    public ResponseEntity<String> helloOrders() {
+        log.info("Received request to /helloOrders endpoint");
+        return ResponseEntity.ok("Hello from Orders Service!");  // Returns 200 OK with a simple message
+    }
+
     @GetMapping
     public ResponseEntity<List<OrderRequestDto>> getAllOrders(HttpServletRequest httpServletRequest) {
         log.info("Fetching all orders via controller");
