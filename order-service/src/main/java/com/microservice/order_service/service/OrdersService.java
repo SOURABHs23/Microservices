@@ -9,6 +9,9 @@ import com.microservice.order_service.entity.OrderItem;
 import com.microservice.order_service.entity.OrderStatus;
 import com.microservice.order_service.entity.Orders;
 import com.microservice.order_service.repository.OrdersRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -37,7 +40,11 @@ public class OrdersService {
         return modelMapper.map(order, OrderRequestDto.class);
     }
 
+//    @Retry(name = "inventoryRetry", fallbackMethod = "createOrderFallback")
+//    @RateLimiter(name = "inventoryRateLimiter", fallbackMethod = "createOrderFallback")
+@CircuitBreaker(name = "inventoryCircuitBreaker", fallbackMethod = "createOrderFallback")
     public OrderRequestDto createOrder(OrderRequestDto orderRequestDto) {
+        log.info("Creating order with items: {}", orderRequestDto.getItems());
         Double totalPrice = inventoryOpenFeignClient.reduceStocks(orderRequestDto);
 
         Orders orders = modelMapper.map(orderRequestDto, Orders.class);
@@ -51,5 +58,12 @@ public class OrdersService {
 
         return modelMapper.map(savedOrder, OrderRequestDto.class);
     }
-}
 
+    // Fallback method for createOrder when all retry attempts fail
+    public OrderRequestDto createOrderFallback(OrderRequestDto orderRequestDto, Exception ex) {
+        log.warn("Fallback triggered for createOrder after retries exhausted. Error: {}", ex.getMessage());
+
+        return new OrderRequestDto();
+
+    }
+}
