@@ -21,9 +21,9 @@ public class OrdersController {
 
 
     @GetMapping("/helloOrders")
-    public ResponseEntity<String> helloOrders() {
+    public ResponseEntity<String> helloOrders(@RequestHeader("X-User-Id") Long userId) {
         log.info("Received request to /helloOrders endpoint");
-        return ResponseEntity.ok("Hello from Orders Service!");  // Returns 200 OK with a simple message
+        return ResponseEntity.ok("Hello from Orders Service user id "+userId  );  // Returns 200 OK with a simple message
     }
 
     @PostMapping("/create-order")
